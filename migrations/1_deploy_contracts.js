@@ -11,13 +11,14 @@ module.exports = async function (deployer, network, addresses) {
     await tokenEth.mint(addresses[0], 1000);
     await deployer.deploy(BridgeEth, tokenEth.address);
     const bridgeEth = await BridgeEth.deployed();
-    await tokenEth.updateAdmin(bridgeEth.address);
+    await tokenEth.mint(bridgeEth.address, 1000);
   }
   if (network === "bsc_testnet") {
     await deployer.deploy(TokenBsc);
     const tokenBsc = await TokenBsc.deployed();
+    await tokenBsc.mint(addresses[0], 1000);
     await deployer.deploy(BridgeBsc, tokenBsc.address);
     const bridgeBsc = await BridgeBsc.deployed();
-    await tokenBsc.updateAdmin(bridgeBsc.address);
+    await tokenBsc.mint(bridgeBsc.address, 1000);
   }
 };

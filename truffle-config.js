@@ -25,6 +25,7 @@ module.exports = {
       network_id: 97, // Binance Snart Chain testnet's id
       chain_id: 97,
       networkCheckTimeout: 100000,
+      confirmations: 6,
     },
   },
 

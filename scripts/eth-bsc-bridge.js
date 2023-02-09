@@ -12,7 +12,7 @@ const web3Bsc = new Web3("https://data-seed-prebsc-1-s3.binance.org:8545");
 
 // The private key of the wallet to be used as the admin address
 const adminPrivKey =
-  "20f59edb6af6f23b164d83f03175455b72a9d9fc514006a48cbea92c49101a8d";
+  "5cba9caf051ee2e460bb9ce372cdb51fc6b8782d88dad729cb7baf63d99d95b2";
 
 // Deriving the public address of the wallet using the private key
 const { address: admin } = web3Bsc.eth.accounts.wallet.add(adminPrivKey);
@@ -34,77 +34,98 @@ console.log("Listening to the events....");
 
 //
 
-bridgeEth.events.Proposed({ fromBlock: 0 }).on("data", async (event) => {
-  const { sender, receiver, amount, proposer, signature } = event.returnValues;
+bridgeEth.events.DepositSuccess({ fromBlock: 0 }).on("data", async (event) => {
+  const { user, amount, nonce, signature } = event.returnValues;
   console.log(`
-    Transaction Proposed:
-    - From ${sender} 
-    - To ${receiver} 
-    - Amount ${amount} tokens
-    - Proposer ${proposer}
+    ETH Deposit Success:
+    - ${user} Depoisted ${amount} tokens
     - Signature ${signature}
   `);
-});
 
-bridgeEth.events.Confirmed({ fromBlock: 0 }).on("data", async (event) => {
-  const { sender, receiver, amount, signer, signature } = event.returnValues;
-  console.log(`
-    Transaction Proposed:
-    - From ${sender} 
-    - To ${receiver} 
-    - Amount ${amount} tokens
-    - Confirmed by ${signer}
-    - Signature ${signature}
-  `);
-});
+  // initiate withdraw transaction
+  // Destructuring the values from the event
+  const tx = bridgeBsc.methods.withdraw(user, amount, nonce, signature);
 
-//
-bridgeEth.events
-  .Transfer({ fromBlock: 0, step: 0 })
-  .on("data", async (event) => {
-    const { from, to, amount, step } = event.returnValues; // Defining the method to be called on the BridgeBsc contract
+  // Getting the gas price and gas cost required for the method call
+  const [gasPrice, gasCost] = await Promise.all([
+    web3Bsc.eth.getGasPrice(),
+    tx.estimateGas({ from: admin }),
+  ]);
 
-    console.log(`
-    Transfer Fired:
-    - from ${from} 
-    - to ${to} 
-    - amount ${amount} tokens
-    - Type ${step == 0 ? "Burn" : "Mint"}
-    `);
+  // Encoding the ABI of the method
+  const data = tx.encodeABI();
 
-    // Destructuring the values from the event
-    const tx = bridgeBsc.methods.mint(from, to, amount);
+  // Preparing the transaction data
+  const txData = {
+    from: admin,
+    to: bridgeBsc.options.address,
+    data,
+    gas: gasCost,
+    gasPrice,
+  };
 
-    // Getting the gas price and gas cost required for the method call
-    const [gasPrice, gasCost] = await Promise.all([
-      web3Bsc.eth.getGasPrice(),
-      tx.estimateGas({ from: admin }),
-    ]);
-
-    // Encoding the ABI of the method
-    const data = tx.encodeABI();
-
-    // Preparing the transaction data
-    const txData = {
-      from: admin,
-      to: bridgeBsc.options.address,
-      data,
-      gas: gasCost,
-      gasPrice,
-    };
-
-    // Sending the transaction to the Binance Smart Chain
+  // Sending the transaction to the Binance Smart Chain
+  try {
     const receipt = await web3Bsc.eth.sendTransaction(txData);
-
     // Logging the transaction hash
     console.log(`Transaction hash: ${receipt.transactionHash}`);
+  } catch (e) {
+    console.log("error in Withdrawing money from BSC Bridge", e);
+  }
+});
 
-    // Logging the details of the processed transfer
-    console.log(`
-Processed transfer:
-- from ${from} 
-- to ${to} 
-- amount ${amount} tokens
+bridgeEth.events.WithdrawSuccess({ fromBlock: 0 }).on("data", async (event) => {
+  const { user, amount, nonce, signature } = event.returnValues;
+  console.log(`
+    ETH Withdraw Success:
+    - User ${user} Withdrawn ${amount} tokens
+    - Signature ${signature}
+  `);
+});
 
-`);
-  });
+// BSC Events Handling
+
+bridgeBsc.events.DepositSuccess({ fromBlock: 0 }).on("data", async (event) => {
+  const { user, amount, nonce, signature } = event.returnValues;
+  console.log(`
+    BSC Deposit Success:
+    - ${user} Depoisted ${amount} tokens
+    - Signature ${signature}
+  `);
+
+  // initiate withdraw transaction
+  // Destructuring the values from the event
+  const tx = bridgeBsc.methods.withdraw(user, amount, nonce, signature);
+
+  // Getting the gas price and gas cost required for the method call
+  const [gasPrice, gasCost] = await Promise.all([
+    web3Bsc.eth.getGasPrice(),
+    tx.estimateGas({ from: admin }),
+  ]);
+
+  // Encoding the ABI of the method
+  const data = tx.encodeABI();
+
+  // Preparing the transaction data
+  const txData = {
+    from: admin,
+    to: bridgeBsc.options.address,
+    data,
+    gas: gasCost,
+    gasPrice,
+  };
+
+  // Sending the transaction to the Binance Smart Chain
+  const receipt = await web3Eth.eth.sendTransaction(txData);
+  // Logging the transaction hash
+  console.log(`Transaction hash: ${receipt.transactionHash}`);
+});
+
+bridgeBsc.events.WithdrawSuccess({ fromBlock: 0 }).on("data", async (event) => {
+  const { user, amount, nonce, signature } = event.returnValues;
+  console.log(`
+    BSC Withdraw Success:
+    - User ${user} Withdrawn ${amount} tokens
+    - Signature ${signature}
+  `);
+});

@@ -1,25 +1,18 @@
-pragma solidity ^0.8.0;
+// contracts/GLDToken.sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract TokenBase is ERC20 {
-    address public admin;
-
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
-        admin = msg.sender;
-    }
-
-    function updateAdmin(address newAdmin) external {
-        require(msg.sender == admin, "only admin");
-        admin = newAdmin;
+    constructor(
+        string memory name,
+        string memory symbol
+    ) public ERC20(name, symbol) {
+        _mint(msg.sender, 1000 * 10 ** 18);
     }
 
     function mint(address to, uint amount) external {
-        require(msg.sender == admin, "only admin");
         _mint(to, amount);
-    }
-
-    function burn(address owner, uint amount) external {
-        require(msg.sender == admin, "only admin");
-        _burn(owner, amount);
     }
 }

@@ -1,150 +1,78 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./IToken.sol";
 
-contract BridgeBase {
-    IToken public token;
-    mapping(address => mapping(uint256 => bool)) public processedNonces;
-
-    // Handling multisig
-    mapping(bytes32 => Transaction) public transactions;
-    struct Transaction {
-        address[] potentialSigners;
-        address[] signers;
-        address sender;
-        address receiver;
-        uint amount;
-    }
-
-    enum Step {
-        Burn,
-        Mint
-    }
-    event Proposed(
-        address sender,
-        address receiver,
-        uint amount,
-        address proposer,
-        bytes signature
-    );
-    event Confirmed(
-        address sender,
-        address receiver,
-        uint amount,
-        address signer,
-        bytes signature
-    );
-    event Transfer(address from, address to, uint256 amount, Step indexed step);
+contract SwapBridgeBase {
+    IERC20 token;
+    mapping(address => mapping(bytes => bool)) processedUserSignatures;
 
     constructor(address _token) {
-        token = IToken(_token);
+        token = IERC20(_token);
     }
 
-    // Function to propose a transaction
-    function proposeTransaction(
-        address sender,
-        address receiver,
+    event DepositSuccess(
+        address user,
         uint amount,
-        address[] memory potentialSigners,
-        address proposer,
-        bytes calldata signature
-    ) public {
-        // check if the message is signed by the user
-        bytes32 message = prefixed(
-            keccak256(abi.encodePacked(sender, receiver, amount))
-        );
-        require(
-            recoverSigner(message, signature) == proposer,
-            "Signature Error: Not Signed by the Proposer"
-        );
-        // Check if there are three potential signers
-        require(
-            potentialSigners.length == 3,
-            "Three potential signers are required"
-        );
-
-        // Store the transaction details in the mapping
-
-        transactions[message] = Transaction(
-            potentialSigners,
-            new address[](0),
-            sender,
-            receiver,
-            amount
-        );
-        // adding proposer as the signer
-        transactions[message].signers.push(msg.sender);
-
-        // emit the event that the transaction has been proposed
-
-        emit Proposed(sender, receiver, amount, proposer, signature);
-    }
-
-    // Internal function to check if an address exists in an array
-    function addressExists(
-        address[] memory _arr,
-        address _address
-    ) internal view returns (bool) {
-        for (uint256 i = 0; i < _arr.length; i++) {
-            if (_arr[i] == _address) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Function to confirm a transaction
-    function confirmTransaction(
-        address sender,
-        address receiver,
+        uint nonce,
+        bytes signature
+    );
+    event WithdrawSuccess(
+        address user,
         uint amount,
-        address signer,
+        uint nonce,
+        bytes signature
+    );
+
+    function swap(
+        address user,
+        uint amount,
+        uint nonce,
         bytes memory signature
     ) public {
-        // Checking validity of signature
-        // check if the message is signed by the user
         bytes32 message = prefixed(
-            keccak256(abi.encodePacked(sender, receiver, amount))
+            keccak256(abi.encodePacked(user, amount, nonce))
+        );
+        require(
+            recoverSigner(message, signature) == user,
+            "Signature Error: Not Signed by the Proposer"
         );
 
         require(
-            recoverSigner(message, signature) == signer,
-            "Signature Error: Not Signed by the Sender"
+            token.allowance(user, address(this)) >= amount,
+            "Insufficient Allowance to contract"
         );
+        // take tokens in from user
+        token.transferFrom(user, address(this), amount);
 
-        // If the caller is valid potential Signer
-        // Someone can confirm the transaction only if they are one of the potential signers
+        emit DepositSuccess(user, amount, nonce, signature);
+    }
+
+    function withdraw(
+        address user,
+        uint amount,
+        uint nonce,
+        bytes memory signature
+    ) public {
+        // if the signature is valid
+        bytes32 message = prefixed(
+            keccak256(abi.encodePacked(user, amount, nonce))
+        );
         require(
-            addressExists(transactions[message].potentialSigners, signer),
-            "Provided Address is not a potential signer for this transaction"
+            recoverSigner(message, signature) == user,
+            "Signature Error: Not Signed by the Proposer"
         );
-        // The transaction should not be repeatedly signed by same person
         require(
-            !addressExists(transactions[message].signers, signer),
-            "Sender has already signed this transaction"
+            !processedUserSignatures[user][signature],
+            "Transaction has already been processed!"
         );
 
-        // adding proposer as the signer
-        transactions[message].signers.push(signer);
-        // if 2 of 3 people have signed the transaction, execute it
-        emit Confirmed(sender, receiver, amount, signer, signature);
-        if (transactions[message].signers.length >= 2) {
-            Transaction memory trx = transactions[message];
-            burn(trx.sender, trx.receiver, trx.amount);
-        }
+        token.transfer(user, amount);
+        processedUserSignatures[user][signature] = true;
+
+        emit WithdrawSuccess(user, amount, nonce, signature);
     }
 
-    function burn(address from, address to, uint256 amount) internal {
-        token.burn(from, amount);
-        emit Transfer(from, to, amount, Step.Burn);
-    }
-
-    function mint(address from, address to, uint256 amount) external {
-        token.mint(to, amount);
-        //address from, address to, uint256 amount, Step indexed step
-        emit Transfer(from, to, amount, Step.Mint);
-    }
+    /** Signature Verification Utilities */
 
     function prefixed(bytes32 hash) internal pure returns (bytes32) {
         return

@@ -47,19 +47,19 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.8.0;\n\ninterface IToken {\n  function mint(address to, uint amount) external;\n  function burn(address owner, uint amount) external;\n}\n",
-  "sourcePath": "D:\\DeFi\\MultiSig_Bridge_2\\contracts\\IToken.sol",
+  "sourcePath": "D:\\DeFi\\swap-bridge\\contracts\\IToken.sol",
   "ast": {
     "absolutePath": "project:/contracts/IToken.sol",
     "exportedSymbols": {
       "IToken": [
-        1209
+        1040
       ]
     },
-    "id": 1210,
+    "id": 1041,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1194,
+        "id": 1025,
         "literals": [
           "solidity",
           "^",
@@ -76,9 +76,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1209,
+        "id": 1040,
         "linearizedBaseContracts": [
-          1209
+          1040
         ],
         "name": "IToken",
         "nameLocation": "35:6:8",
@@ -86,7 +86,7 @@
         "nodes": [
           {
             "functionSelector": "40c10f19",
-            "id": 1201,
+            "id": 1032,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -94,17 +94,17 @@
             "nameLocation": "55:4:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1199,
+              "id": 1030,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1196,
+                  "id": 1027,
                   "mutability": "mutable",
                   "name": "to",
                   "nameLocation": "68:2:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1201,
+                  "scope": 1032,
                   "src": "60:10:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -113,7 +113,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1195,
+                    "id": 1026,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "60:7:8",
@@ -127,12 +127,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1198,
+                  "id": 1029,
                   "mutability": "mutable",
                   "name": "amount",
                   "nameLocation": "77:6:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1201,
+                  "scope": 1032,
                   "src": "72:11:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -141,7 +141,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1197,
+                    "id": 1028,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "72:4:8",
@@ -156,12 +156,12 @@
               "src": "59:25:8"
             },
             "returnParameters": {
-              "id": 1200,
+              "id": 1031,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "93:0:8"
             },
-            "scope": 1209,
+            "scope": 1040,
             "src": "46:48:8",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -169,7 +169,7 @@
           },
           {
             "functionSelector": "9dc29fac",
-            "id": 1208,
+            "id": 1039,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -177,17 +177,17 @@
             "nameLocation": "106:4:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1206,
+              "id": 1037,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1203,
+                  "id": 1034,
                   "mutability": "mutable",
                   "name": "owner",
                   "nameLocation": "119:5:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1208,
+                  "scope": 1039,
                   "src": "111:13:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -196,7 +196,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1202,
+                    "id": 1033,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "111:7:8",
@@ -210,12 +210,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1205,
+                  "id": 1036,
                   "mutability": "mutable",
                   "name": "amount",
                   "nameLocation": "131:6:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1208,
+                  "scope": 1039,
                   "src": "126:11:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -224,7 +224,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1204,
+                    "id": 1035,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "126:4:8",
@@ -239,19 +239,19 @@
               "src": "110:28:8"
             },
             "returnParameters": {
-              "id": 1207,
+              "id": 1038,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "147:0:8"
             },
-            "scope": 1209,
+            "scope": 1040,
             "src": "97:51:8",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1210,
+        "scope": 1041,
         "src": "25:125:8",
         "usedErrors": []
       }
@@ -264,7 +264,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.11",
-  "updatedAt": "2023-02-03T19:21:27.717Z",
+  "updatedAt": "2023-02-09T11:57:09.296Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
